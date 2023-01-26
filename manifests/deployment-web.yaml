@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: <YOUR_ACR_NAME>.azurecr.io/web:v0.1.0
+          image: notavalidregistry.azurecr.io/web:v0.1.0
           ports:
             - containerPort: 80
           env:
