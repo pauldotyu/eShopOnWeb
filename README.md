@@ -115,7 +115,7 @@ You can also run the applications by using the instructions located in their `Do
 
 ```bash
 az group create -n rg-eshop -l westus3
-$ACR_NAME=$(az acr create -n acreshop$RANDOM -g rg-eshop --sku Basic --query name)
+ACR_NAME=$(az acr create -n acreshop$RANDOM -g rg-eshop --sku Basic --query name -o tsv)
 az aks create -n aks-eshop -g rg-eshop --attach-acr $ACR_NAME
 az aks get-credentials -n aks-eshop -g rg-eshop
 
