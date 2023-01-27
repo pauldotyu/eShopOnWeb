@@ -1,6 +1,7 @@
 $githubOrganizationName = 'smurawski'
 $githubRepositoryName  = 'eShopOnWeb'
 $testApplicationRegistration = New-AzADApplication -DisplayName 'cnny-week3-day1'
+
 New-AzADAppFederatedCredential `
    -Name 'cnny-week3-day1' `
    -ApplicationObjectId $testApplicationRegistration.Id `
@@ -14,3 +15,8 @@ New-AzRoleAssignment `
    -ApplicationId $($testApplicationRegistration.AppId) `
    -RoleDefinitionName Contributor `
    -Scope $($testResourceGroup.ResourceId)
+
+New-AzRoleAssignment `
+   -ApplicationId $($testApplicationRegistration.AppId) `
+   -RoleDefinitionName Contributor `
+   -Scope (Get-AzContext).Subscription.Id
