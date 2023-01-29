@@ -16,7 +16,7 @@ spec:
     spec:
       securityContext:
         fsGroup: 10001
-      serviceAccountName: eshop-account
+      serviceAccountName: ${SERVICE_ACCOUNT_NAME}
       containers:
         - name: db
           image: mcr.microsoft.com/mssql/server:2019-latest

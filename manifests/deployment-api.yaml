@@ -14,7 +14,7 @@ spec:
       labels:
         app: api
     spec:
-      serviceAccount: eshop-account
+      serviceAccount: ${SERVICE_ACCOUNT_NAME}
       containers:
         - name: api
           image: notavalidregistry.azurecr.io/api:v0.1.0
