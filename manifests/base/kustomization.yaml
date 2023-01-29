@@ -1,25 +1,8 @@
 resources:
 - configmap-app.yaml
-- configmap-db.yaml
 - persistentvolumeclaim-app.yaml
-- persistentvolumeclaim-db.yaml
-- service-api.yaml
-- service-db.yaml
-- service-web.yaml
 - secretproviderclass.yaml
 - serviceaccount.yaml
-- deployment-db.yaml
-- deployment-api.yaml
-- deployment-web.yaml
-
-# Change the image name and version
-images:
-- name: notavalidregistry.azurecr.io/api:v0.1.0
-  newName: <YOUR_ACR_SERVER>/api
-  newTag: <YOUR_IMAGE_TAG>
-- name: notavalidregistry.azurecr.io/web:v0.1.0
-  newName: <YOUR_ACR_SERVER>/web
-  newTag: <YOUR_IMAGE_TAG>
   
 patches:
 - patch: |-
@@ -52,9 +35,3 @@ patches:
       value: <YOUR_TENANT_ID>
   target:
     kind: SecretProviderClass
-- patch: |-
-    - op: replace
-      path: "/spec/template/spec/serviceAccountName"
-      value: <YOUR_SERVICE_ACCOUNT_NAME>
-  target:
-    kind: Deployment
