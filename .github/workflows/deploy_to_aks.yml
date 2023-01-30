@@ -62,6 +62,6 @@ jobs:
       - name: Apply Kubernetes Configuration
         run: |
           kubectl apply -k ./manifests/overlays/dev/db
-          sleep 60
+          sleep 90
           kubectl apply -k ./manifests/overlays/dev/api
           kubectl apply -k ./manifests/overlays/dev/web
