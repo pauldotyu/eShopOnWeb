@@ -7,8 +7,10 @@ param keyVaultSku string = 'standard'
 param userObjectId string
 param serviceAccountName string = 'eshop-serviceaccount'
 param serviceAccountNamespace string = 'default'
-param guidValue string = newGuid()
-var mssqlPassword = '!!${uniqueString(guidValue)}'
+
+// concatenate unique strings with an ampersand to make something random yet deterministic
+var mssqlPassword = '${uniqueString(subscription().id)}&${uniqueString(resourceGroup().id)}'
+
 var rand = substring(uniqueString(resourceGroup().id), 0, 6)
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
