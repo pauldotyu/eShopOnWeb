@@ -28,12 +28,12 @@ patches:
 - patch: |-
     - op: replace
       path: "/spec/rules/0/host"
-      value: <YOUR_DNS_name>
+      value: <YOUR_DNS_NAME>
   target:
     kind: Ingress
 - patch: |-
     - op: replace
       path: "/spec/tls/0/hosts/0"
-      value: <YOUR_DNS_name>
+      value: <YOUR_DNS_NAME>
   target:
     kind: Ingress

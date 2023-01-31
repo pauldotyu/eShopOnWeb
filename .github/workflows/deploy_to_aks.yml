@@ -24,6 +24,12 @@ on:
       akvName:
         required: true
         type: string
+      tlsCertificateUri:
+        required: true
+        type: string
+      dnsZoneName:
+        required: true
+        type: string
     secrets:
       AZURE_CLIENT_ID:
         required: true
@@ -48,7 +54,9 @@ jobs:
             -e "s/<YOUR_SERVICE_ACCOUNT_NAME>/${{ inputs.serviceAccount }}/g" \
             -e "s/<YOUR_MANAGED_IDENTITY_CLIENT_ID>/${{ inputs.managedIdentityClientId }}/g" \
             -e "s/<YOUR_KEY_VAULT_NAME>/${{ inputs.akvName }}/g" \
-            -e "s/<YOUR_TENANT_ID>/${{ secrets.AZURE_TENANT_ID }}/g" {} \;
+            -e "s/<YOUR_TENANT_ID>/${{ secrets.AZURE_TENANT_ID }}/g" \
+            -e "s/<YOUR_TLS_CERT_URI>/${{ inputs.tlsCertificateUri }}/g" \
+            -e "s/<YOUR_DNS_NAME>/${{ inputs.dnsZoneName }}/g" {} \;
         working-directory: ./manifests
       - uses: azure/login@v1
         name: Sign in to Azure
