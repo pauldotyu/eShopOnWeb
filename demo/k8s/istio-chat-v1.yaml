@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: chat-gw-external
+spec:
+  selector:
+    istio: aks-istio-ingressgateway-external
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: chat-vs-external
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - chat-gw-external
+  http:
+    - match:
+        - uri:
+            prefix: /shopassist
+      route:
+        - destination:
+            host: chatapi.default.svc.cluster.local
+            port:
+              number: 80

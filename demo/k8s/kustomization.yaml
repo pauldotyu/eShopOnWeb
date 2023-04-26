@@ -1,0 +1,31 @@
+resources:
+  - publicapi.yaml
+  - web.yaml
+  - istio-eshop.yaml
+  - chatapi-v1.yaml
+  - istio-chat-v1.yaml
+  - keda-web.yaml
+  - keda-chatapi.yaml
+
+# Change the image name and version
+images:
+  - name: chatapi
+    newName: acrbuild202321487.azurecr.io/eshop/chatapi
+    newTag: v1.0.0
+  - name: publicapi
+    newName: acrbuild202321487.azurecr.io/eshop/publicapi
+    newTag: v1.0.0
+  - name: web
+    newName: acrbuild202321487.azurecr.io/eshop/web
+    newTag: v1.0.0
+
+configMapGenerator:
+  - envs:
+      - .env
+    name: configs
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization

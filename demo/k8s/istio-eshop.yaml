@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: eshop-gw-external
+spec:
+  selector:
+    istio: aks-istio-ingressgateway-external
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: eshop-vs-external
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - eshop-gw-external
+  http:
+    - match:
+        - uri:
+            prefix: /api
+      route:
+        - destination:
+            host: publicapi.default.svc.cluster.local
+            port:
+              number: 80
+    - route:
+        - destination:
+            host: web.default.svc.cluster.local
+            port:
+              number: 80

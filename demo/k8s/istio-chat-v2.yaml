@@ -1,0 +1,51 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: chat-gw-external
+spec:
+  selector:
+    istio: aks-istio-ingressgateway-external
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: chatapi
+spec:
+  host: chatapi
+  subsets:
+    - name: version-v1
+      labels:
+        version: v1
+    - name: version-v2
+      labels:
+        version: v2
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: chat-vs-external
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - chat-gw-external
+  http:
+    - match:
+        - headers:
+            x-istio-msbuild:
+              exact: "brk225h"
+      route:
+        - destination:
+            host: catalog.default.svc.cluster.local
+            subset: version-v2
+    - route:
+        - destination:
+            host: chatapi.default.svc.cluster.local
+            subset: version-v1

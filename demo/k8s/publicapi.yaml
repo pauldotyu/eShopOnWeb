@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: publicapi
+  labels:
+    app: publicapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: publicapi
+  template:
+    metadata:
+      labels:
+        app: publicapi
+    spec:
+      containers:
+        - name: publicapi
+          image: publicapi:v0.1.0
+          ports:
+            - containerPort: 80
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:80
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: ConnectionStrings__CatalogConnection
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: SQL_CONNECTION_CATALOG
+            - name: ConnectionStrings__IdentityConnection
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: SQL_CONNECTION_IDENTITY
+          resources:
+            requests:
+              cpu: 5m
+              memory: 128Mi
+            limits:
+              cpu: 10m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: publicapi
+spec:
+  selector:
+    app: publicapi
+  ports:
+    - protocol: TCP
+      port: 80

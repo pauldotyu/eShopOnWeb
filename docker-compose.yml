@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 
 services:
   eshopwebmvc:
@@ -15,6 +15,13 @@ services:
       dockerfile: src/PublicApi/Dockerfile
     depends_on:
       - "sqlserver"
+  eshopchatapi:
+    image: ${DOCKER_REGISTRY-}eshopchatapi
+    build:
+      context: .
+      dockerfile: src/ChatApi/Dockerfile
+    depends_on:
+      - "sqlserver"
   sqlserver:
     image: mcr.microsoft.com/azure-sql-edge
     ports:
@@ -22,4 +29,3 @@ services:
     environment:
       - SA_PASSWORD=@someThingComplicated1234
       - ACCEPT_EULA=Y
-

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  labels:
+    app: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: web:v0.1.0
+          ports:
+            - containerPort: 80
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:80
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: ConnectionStrings__CatalogConnection
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: SQL_CONNECTION_CATALOG
+            - name: ConnectionStrings__IdentityConnection
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: SQL_CONNECTION_IDENTITY
+            - name: ConnectionStrings__AppConfigConnection
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: APP_CONFIG_CONNECTION
+            - name: baseUrls__chatBase
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: CHAT_URL
+          resources:
+            requests:
+              cpu: 25m
+              memory: 512Mi
+            limits:
+              cpu: 50m
+              memory: 1024Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  selector:
+    app: web
+  ports:
+    - protocol: TCP
+      port: 80

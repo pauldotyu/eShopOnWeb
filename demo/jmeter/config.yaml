@@ -1,0 +1,17 @@
+displayName: Get_20.185.98.223
+testPlan: quick_test.jmx
+description:
+engineInstances: 5
+testId: 30b78b3d-2cea-4e0d-8910-b8ab1a8e27fe
+splitAllCSVs: False
+env:
+  - name: domain
+    value: 20.185.98.223
+  - name: protocol
+    value: http
+  - name: threads_per_engine
+    value: 1000
+  - name: ramp_up_time
+    value: 0
+  - name: duration_in_sec
+    value: 120

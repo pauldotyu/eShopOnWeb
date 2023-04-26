@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatapi-v1
+  labels:
+    app: chatapi
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatapi
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: chatapi
+        version: v1
+    spec:
+      containers:
+        - name: chatapi
+          image: chatapi:v0.1.0
+          ports:
+            - containerPort: 80
+          env:
+            - name: AzureOpenAISettings__Endpoint
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: AOAI_ENDPOINT
+            - name: AzureOpenAISettings__Key
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: AOAI_KEY
+            - name: AzureOpenAISettings__ChatCompletionModel__Alias
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: AOAI_CHATCOMPLETION_MODEL_ALIAS
+            - name: AzureOpenAISettings__ChatCompletionModel__DeploymentName
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: AOAI_CHATCOMPLETION_MODEL_DEPLOYMENT
+            - name: AzureOpenAISettings__EmbeddingGenerationModel__Alias
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: AOAI_EMBEDDING_MODEL_ALIAS
+            - name: AzureOpenAISettings__EmbeddingGenerationModel__DeploymentName
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: AOAI_EMBEDDING_MODEL_DEPLOYMENT
+            - name: AzureOpenAISettings__TextCompletionModel__Alias
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: AOAI_TEXTCOMPLETION_MODEL_ALIAS
+            - name: AzureOpenAISettings__TextCompletionModel__DeploymentName
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: AOAI_TEXTCOMPLETION_MODEL_DEPLOYMENT
+          resources:
+            requests:
+              cpu: 5m
+              memory: 128Mi
+            limits:
+              cpu: 10m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatapi
+spec:
+  selector:
+    app: chatapi
+  ports:
+    - protocol: TCP
+      port: 80
