@@ -64,12 +64,12 @@ app.MapPost("/shopassist", async ([FromServices]IKernel kernel, [FromBody]ChatRe
   await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "8", text: "Kudu Purple Sweatshirt");
   await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "9", text: "Cup<T> White Mug");
   await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "10", text: ".NET Foundation Sheet");
-  await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "1", text: "Cup<T> Sheet");
+  await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "11", text: "Cup<T> Sheet");
   await kernel.Memory.SaveInformationAsync(MemoryCollectionName, id: "12", text: "Prism White TShirt");
 
   kernel.ImportSkill(new TextMemorySkill());
 
-  var prompt = @"eShopBot can have a conversation with you about any topic.
+  var prompt = @"eShopBot2 can have a conversation with you about any topic.
   It can give explicit instructions or say 'I don't know' if it does not have an answer.
 
   Information about products, from previous conversations:
@@ -82,7 +82,7 @@ app.MapPost("/shopassist", async ([FromServices]IKernel kernel, [FromBody]ChatRe
   Chat:
   {{$history}}
   User: {{$userInput}}
-  eShopBot: ";
+  eShopBot2: ";
 
   var chatFunction = kernel.CreateSemanticFunction(prompt, maxTokens: 200, temperature: 0.8);
 
@@ -106,10 +106,10 @@ app.MapPost("/shopassist", async ([FromServices]IKernel kernel, [FromBody]ChatRe
     var answer = await chatFunction.InvokeAsync(context);
 
     // Append the new interaction to the chat history
-    history += $"\nUser: {input}\nChatBot: {answer}\n"; context["history"] = history;
+    history += $"\nUser: {input}\neShopBot2: {answer}\n"; context["history"] = history;
     
     // Show the bot response
-    resp = "eShopBot: " + context;
+    resp = "eShopBot2: " + context;
   };
 
   await Chat(req.Text);

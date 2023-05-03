@@ -2,10 +2,8 @@ resources:
   - publicapi.yaml
   - web.yaml
   - istio-eshop.yaml
-  - chatapi-v1.yaml
-  - istio-chat-v1.yaml
-  - keda-web.yaml
-  - keda-chatapi.yaml
+  - chatapi-v2.yaml
+  - istio-chat-v2.yaml
 
 # Change the image name and version
 images:
