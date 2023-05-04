@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: chat-gw-external
+  name: chat
 spec:
   selector:
     istio: aks-istio-ingressgateway-external
@@ -30,12 +30,12 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: chat-vs-external
+  name: chat
 spec:
   hosts:
     - "*"
   gateways:
-    - chat-gw-external
+    - chat
   http:
     - match:
         - uri:

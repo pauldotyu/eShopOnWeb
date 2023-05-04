@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  labels:
+    app: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: web:v0.1.0
+          ports:
+            - containerPort: 80
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:80
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: ConnectionStrings__CatalogConnection
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: SQL_CONNECTION_CATALOG
+            - name: ConnectionStrings__IdentityConnection
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: SQL_CONNECTION_IDENTITY
+            - name: ConnectionStrings__AppConfigConnection
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: APP_CONFIG_CONNECTION
+            - name: baseUrls__chatBase
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: CHAT_URL
+          resources:
+            requests:
+              cpu: 25m
+              memory: 512Mi
+            limits:
+              cpu: 50m
+              memory: 1024Mi
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: web
+spec:
+  selector:
+    istio: aks-istio-ingressgateway-external
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: web-release
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web
+  progressDeadlineSeconds: 60
+  # Service / VirtualService Config
+  service:
+    name: web
+    port: 80
+    gateways:
+      - web
+    hosts:
+      - "*"
+  analysis:
+    interval: 45s
+    threshold: 5
+    maxWeight: 50
+    stepWeight: 10
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 30s
