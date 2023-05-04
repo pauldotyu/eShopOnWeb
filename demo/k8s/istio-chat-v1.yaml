@@ -28,6 +28,6 @@ spec:
             prefix: /shopassist
       route:
         - destination:
-            host: chatapi.default.svc.cluster.local
+            host: chatapi
             port:
               number: 80

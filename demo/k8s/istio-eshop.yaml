@@ -28,11 +28,11 @@ spec:
             prefix: /api
       route:
         - destination:
-            host: publicapi.default.svc.cluster.local
+            host: publicapi
             port:
               number: 80
     - route:
         - destination:
-            host: web.default.svc.cluster.local
+            host: web
             port:
               number: 80
