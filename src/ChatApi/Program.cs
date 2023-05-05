@@ -69,7 +69,7 @@ app.MapPost("/shopassist", async ([FromServices]IKernel kernel, [FromBody]ChatRe
 
   kernel.ImportSkill(new TextMemorySkill());
 
-  var prompt = @"eShopBot2 can have a conversation with you about any topic.
+  var prompt = @"eShopBot can have a conversation with you about any topic.
   It can give explicit instructions or say 'I don't know' if it does not have an answer.
 
   Information about products, from previous conversations:
@@ -82,7 +82,7 @@ app.MapPost("/shopassist", async ([FromServices]IKernel kernel, [FromBody]ChatRe
   Chat:
   {{$history}}
   User: {{$userInput}}
-  eShopBot2: ";
+  eShopBot: ";
 
   var chatFunction = kernel.CreateSemanticFunction(prompt, maxTokens: 200, temperature: 0.8);
 
@@ -106,10 +106,10 @@ app.MapPost("/shopassist", async ([FromServices]IKernel kernel, [FromBody]ChatRe
     var answer = await chatFunction.InvokeAsync(context);
 
     // Append the new interaction to the chat history
-    history += $"\nUser: {input}\neShopBot2: {answer}\n"; context["history"] = history;
+    history += $"\nUser: {input}\neShopBot: {answer}\n"; context["history"] = history;
     
     // Show the bot response
-    resp = "eShopBot2: " + context;
+    resp = "eShopBot: " + context;
   };
 
   await Chat(req.Text);
