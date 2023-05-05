@@ -123,11 +123,14 @@ jobs:
           # save the ENV secret as a .env file
           echo "${{ secrets.ENV }}" > .env
 
+          # deploy namespace if it doesn't exist
+          kubectl get namespace | grep -q "^eshop " || kubectl create namespace eshop
+
           # deploy sqlserver if it doesn't exist
-          kubectl get deployment sqlserver || kubectl apply -f sqlserver.yaml
+          kubectl get deployment sqlserver -n eshop || kubectl apply -n eshop -f sqlserver.yaml
 
           # label namespace for automatic istio sidecar injection
-          kubectl label namespace default istio.io/rev=asm-1-17
+          kubectl label namespace eshop istio.io/rev=asm-1-17
 
           # deploy prometheus configmap if it doesn't exist
           kubectl get cm ama-metrics-prometheus-config -n kube-system || kubectl create configmap ama-metrics-prometheus-config --from-file=prometheus-config -n kube-system
@@ -136,5 +139,5 @@ jobs:
           kustomize edit set image publicapi=${{ env.ACR_NAME }}.azurecr.io/eshop/publicapi:${{ github.sha }}
           kustomize edit set image web=${{ env.ACR_NAME }}.azurecr.io/eshop/web:${{ github.sha }}
           kustomize edit set image chatapi=${{ env.ACR_NAME }}.azurecr.io/eshop/chatapi:${{ github.sha }}
-          kustomize build . | kubectl apply -f -
+          kustomize build . | kubectl apply -n eshop -f -
         working-directory: demo/k8s
