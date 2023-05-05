@@ -3,7 +3,7 @@
 Run the deployment script
 
 ```bash
-cd /demo/azure
+cd demo/azure
 ./deploy.sh
 ```
 
@@ -15,11 +15,13 @@ Setup the GitHub repo for workflow runs
 # get repo name
 REPO=pauldotyu/eShopOnWeb
 BRANCH=main
+SUBJECT=repo:${REPO}:ref:refs/heads/${BRANCH}
 
 # set app name
 APP_NAME=<YOUR_APP_REGISTRATION_NAME>
 
 # create app registration and service principal
+# be sure you have proper permissions to create an app registrations in your tenant
 APP_OBJECT_ID=$(az ad app create --display-name ${APP_NAME} --query id -o tsv)
 USER_OBJECT_ID=$(az ad sp create --id $APP_OBJECT_ID --query id -o tsv)
 
@@ -29,7 +31,7 @@ az role assignment create --role "Owner" --assignee-object-id $USER_OBJECT_ID
 # create the federated credential for the app registration
 az ad app federated-credential create \
    --id $APP_OBJECT_ID \
-   --parameters "{\"name\":\"${APP_NAME}\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:${REPO}:ref:refs/heads/${BRANCH}\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+   --parameters "{\"name\":\"${APP_NAME}\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"${SUBJECT}\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
 
 # get resource group name
 RG_NAME=<YOUR_RESOURCE_GROUP_NAME>
@@ -45,6 +47,14 @@ ACR_NAME=$(az resource list \
   --resource-group $RG_NAME \
   --resource-type Microsoft.ContainerRegistry/registries \
   --query "[0].name" -o tsv)
+
+# make sure you have all the required values
+echo $APP_OBJECT_ID
+echo $USER_OBJECT_ID
+echo $REPO
+echo $ACR_NAME
+echo $AKS_NAME
+echo $RG_NAME
 
 # set the default repo to be your fork
 gh repo set-default
@@ -63,13 +73,15 @@ Build an .env file and upload as a GitHub secret. This will be used to load as c
 
 ```bash
 # remove old .env file
-rm .env
+rm -f .env
 
 # create new .env file
 touch .env
 
-# add sql connection strings
+# add sql password (TODO: see if you can remove this one)
 echo "SQL_PASSWORD=@someThingComplicated1234" >> .env
+
+# add sql connection strings
 echo "SQL_CONNECTION_CATALOG=Server=sqlserver,1433;Integrated Security=true;Database=Microsoft.eShopOnWeb.CatalogDb;User Id=sa;Password=@someThingComplicated1234;Trusted_Connection=false;TrustServerCertificate=True;" >> .env
 echo "SQL_CONNECTION_IDENTITY=Server=sqlserver,1433;Integrated Security=true;Database=Microsoft.eShopOnWeb.Identity;User Id=sa;Password=@someThingComplicated1234;Trusted_Connection=false;TrustServerCertificate=True;" >> .env
 
@@ -114,51 +126,29 @@ echo "AOAI_EMBEDDING_MODEL_DEPLOYMENT=text-embedding-ada-002" >> .env
 echo "AOAI_TEXTCOMPLETION_MODEL_ALIAS=davinci-azure" >> .env
 echo "AOAI_TEXTCOMPLETION_MODEL_DEPLOYMENT=text-davinci-003" >> .env
 
+# connect to the aks cluster
+az aks get-credentials --name $AKS_NAME --resource-group $RG_NAME
+
 INGRESS_IP=$(kubectl get svc -n aks-istio-ingress aks-istio-ingressgateway-external -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 echo "CHAT_URL=http://$INGRESS_IP/shopassist" >> .env
 
+# take a look at the .env file
+cat .env
+
 # upload .env file as a secret
 gh secret set ENV --repo $REPO < .env
+
+# remove .env file
+rm -f .env
 ```
 
-Configure Istio on the AKS cluster
+Run GitHub Action to deploy the rest of the app to Kubernetes
 
 ```bash
-# get kubectl credentials
-az aks get-credentials --name $AKS_NAME --resource-group $RG_NAME
+gh workflow run dotnetcore.yml
 
-# make sure you are in the k8s directory
-cd ../k8s
-
-# enable automatic sidecar injection
-kubectl label namespace default istio.io/rev=asm-1-17
-
-# deploy the prometheus configmap for istio
-kubectl create configmap ama-metrics-prometheus-config --from-file=prometheus-config -n kube-system
-```
-
-Deploy app to Kubernetes
-
-```bash
-# deploy the sqlserver
-kubectl apply -f sqlserver.yaml
-
-# get acr server
-ACR_SERVER=$(az acr show \
-  --name $ACR_NAME \
-  --resource-group $RG_NAME \
-  --query loginServer \
-  --output tsv)
-
-# build images (make sure you are in the root of the repo)
-PUBLICAPI_VERSION=<YOUR_VERSION_NUMBER>
-WEB_VERSION=<YOUR_VERSION_NUMBER>
-CHATAPI_VERSION=<YOUR_VERSION_NUMBER>
-
-kustomize edit set image publicapi=$ACR_SERVER/eshop/publicapi:$PUBLICAPI_VERSION
-kustomize edit set image web=$ACR_SERVER/eshop/web:$WEB_VERSION
-kustomize edit set image chatapi=$ACR_SERVER/eshop/chatapi:$CHATAPI_VERSION
-kustomize build . | k apply -f -
+# watch the logs
+gh run watch
 ```
 
 Test the ChatApi
@@ -173,7 +163,10 @@ Enable the Chat Feature on Web
 az appconfig feature enable -n $AAC_NAME --feature Chat -y
 
 # restart web for the change to take effect
-kubectl rollout restart deploy web
+kubectl rollout restart deploy/web -n eshop
+
+# watch the logs
+kubectl logs -l app=web -n eshop -f
 ```
 
 Disable the Chat Feature on Web
@@ -182,11 +175,14 @@ Disable the Chat Feature on Web
 az appconfig feature disable -n $AAC_NAME --feature Chat -y
 
 # restart web for the change to take effect
-kubectl rollout restart deploy web
+kubectl rollout restart deploy/web -n eshop
+
+# watch the logs
+kubectl logs -l app=web -n eshop -f
 ```
 
 Send a consistent stream of requests to the ChatApi
 
 ```bash
-while true; do curl -s http://$INGRESS_IP/shopassist -H "Content-Type: application/json" -d '{"text": "hello"}'; echo; sleep 1; done
+while true; do curl -s http://$INGRESS_IP/shopassist -H "Content-Type: application/json" -d '{"text": "hello"}'; echo; sleep 60s; done
 ```
