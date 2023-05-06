@@ -131,8 +131,10 @@ az aks get-credentials --name $AKS_NAME --resource-group $RG_NAME
 
 INGRESS_IP=$(kubectl get svc -n aks-istio-ingress aks-istio-ingressgateway-external -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 echo "CHAT_URL=http://$INGRESS_IP/shopassist" >> .env
+echo "API_URL=http://$INGRESS_IP/api/" >> .env
+echo "WEB_URL=http://$INGRESS_IP/" >> .env
 
-# take a look at the .env file
+# take a look at the .env file and make sure its right
 cat .env
 
 # upload .env file as a secret

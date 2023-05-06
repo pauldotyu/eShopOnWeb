@@ -39,6 +39,16 @@ spec:
                 configMapKeyRef:
                   name: configs
                   key: APP_CONFIG_CONNECTION
+            - name: baseUrls__webBase
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: WEB_URL
+            - name: baseUrls__apiBase
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: API_URL
           resources:
             requests:
               cpu: 25m

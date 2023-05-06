@@ -34,6 +34,16 @@ spec:
                 configMapKeyRef:
                   name: configs
                   key: SQL_CONNECTION_IDENTITY
+            - name: baseUrls__webBase
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: WEB_URL
+            - name: baseUrls__apiBase
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: API_URL
           resources:
             requests:
               cpu: 5m
