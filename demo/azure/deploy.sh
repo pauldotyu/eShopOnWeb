@@ -92,11 +92,12 @@ AKS_NAME=$(az aks create --name aks-build2023-$RAND \
   --enable-addons azure-keyvault-secrets-provider,gitops \
   --enable-managed-identity \
   --enable-oidc-issuer \
-  --enable-keda \
   --enable-cluster-autoscaler \
+  --enable-keda \
+  --enable-asm \
   --min-count 3 \
   --max-count 20 \
-  --enable-asm \
+  --node-vm-size Standard_D4s_v5 \
   --attach-acr $ACR_NAME \
   --query name \
   --output tsv)
