@@ -15,6 +15,7 @@ using Microsoft.eShopWeb.Infrastructure.Identity;
 using Microsoft.eShopWeb.Web;
 using Microsoft.eShopWeb.Web.Configuration;
 using Microsoft.eShopWeb.Web.HealthChecks;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.FeatureManagement;
 
@@ -45,9 +46,18 @@ builder.Configuration.AddEnvironmentVariables();
 // Add Azure App Configuration for Feature Flags
 builder.Configuration.AddAzureAppConfiguration(options => 
 {
+    
     options.Connect(builder.Configuration.GetConnectionString("AppConfigConnection"))
-    .UseFeatureFlags();
+        // Load all keys that start with `Chat` and have no label
+        .Select("Chat", LabelFilter.Null)
+        // Configure to reload configuration if the registered sentinel key is modified
+        .ConfigureRefresh(refreshOptions =>
+            refreshOptions.Register("Chat", refreshAll: true))
+        .UseFeatureFlags(featureFlagOptions =>
+            featureFlagOptions.CacheExpirationInterval = TimeSpan.FromSeconds(1)
+        );
 });
+
 builder.Services.AddAzureAppConfiguration();
 builder.Services.AddFeatureManagement();
 
