@@ -1,44 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web
+  name: publicapi
   labels:
-    app: web
+    app: publicapi
+    version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: web
+      app: publicapi
+      version: v1
   template:
     metadata:
       labels:
-        app: web
+        app: publicapi
+        version: v1
     spec:
       containers:
-        - name: web
-          image: eshop/web:v1.2.0
+        - name: publicapi
+          image: eshop/publicapi:v1
           ports:
             - containerPort: 80
-          livenessProbe:
-            failureThreshold: 3
-            httpGet:
-              path: /health
-              port: 80
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 3
-            successThreshold: 1
-            timeoutSeconds: 60
-          readinessProbe:
-            failureThreshold: 10
-            httpGet:
-              path: /health
-              port: 80
-              scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 3
-            successThreshold: 1
-            timeoutSeconds: 60
           env:
             - name: ASPNETCORE_URLS
               value: http://+:80
@@ -54,11 +37,6 @@ spec:
                 configMapKeyRef:
                   name: configs
                   key: SQL_CONNECTION_IDENTITY
-            - name: ConnectionStrings__AppConfigConnection
-              valueFrom:
-                configMapKeyRef:
-                  name: configs
-                  key: APP_CONFIG_CONNECTION
             - name: baseUrls__webBase
               valueFrom:
                 configMapKeyRef:
@@ -69,26 +47,21 @@ spec:
                 configMapKeyRef:
                   name: configs
                   key: API_URL
-            - name: baseUrls__chatBase
-              valueFrom:
-                configMapKeyRef:
-                  name: configs
-                  key: CHAT_URL
           resources:
             requests:
-              cpu: 25m
-              memory: 512Mi
+              cpu: 5m
+              memory: 128Mi
             limits:
-              cpu: 50m
-              memory: 1024Mi
+              cpu: 10m
+              memory: 512Mi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: web
+  name: publicapi
 spec:
   selector:
-    app: web
+    app: publicapi
   ports:
     - protocol: TCP
       port: 80

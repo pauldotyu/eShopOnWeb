@@ -1,21 +1,19 @@
 resources:
-  - publicapi.yaml
-  - web.yaml
-  - istio-eshop.yaml
+  - publicapi-v1.yaml
+  - web-v1.yaml
   - chatapi-v1.yaml
-  - istio-chat-v1.yaml
 
 # Change the image name and version
 images:
   - name: chatapi
-    newName: acrbuild202321487.azurecr.io/eshop/chatapi
-    newTag: v1.0.0
+    newName: eshop/chatapi
+    newTag: v1
   - name: publicapi
-    newName: acrbuild202321487.azurecr.io/eshop/publicapi
-    newTag: v1.0.0
+    newName: eshop/publicapi
+    newTag: v1
   - name: web
-    newName: acrbuild202321487.azurecr.io/eshop/web
-    newTag: v1.0.0
+    newName: eshop/web
+    newTag: v1
 
 configMapGenerator:
   - envs:

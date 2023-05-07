@@ -4,21 +4,44 @@ metadata:
   name: web
   labels:
     app: web
+    version: v2
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: web
+      version: v2
   template:
     metadata:
       labels:
         app: web
+        version: v2
     spec:
       containers:
         - name: web
-          image: web:v0.1.0
+          image: eshop/web:v2
           ports:
             - containerPort: 80
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 60
+          readinessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /health
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 60
           env:
             - name: ASPNETCORE_URLS
               value: http://+:80
@@ -49,11 +72,6 @@ spec:
                 configMapKeyRef:
                   name: configs
                   key: API_URL
-            - name: baseUrls__chatBase
-              valueFrom:
-                configMapKeyRef:
-                  name: configs
-                  key: CHAT_URL
           resources:
             requests:
               cpu: 25m
@@ -61,51 +79,3 @@ spec:
             limits:
               cpu: 50m
               memory: 1024Mi
----
-apiVersion: networking.istio.io/v1alpha3
-kind: Gateway
-metadata:
-  name: web
-spec:
-  selector:
-    istio: aks-istio-ingressgateway-external
-  servers:
-    - port:
-        number: 80
-        name: http
-        protocol: HTTP
-      hosts:
-        - "*"
----
-apiVersion: flagger.app/v1beta1
-kind: Canary
-metadata:
-  name: web-release
-spec:
-  targetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: web
-  progressDeadlineSeconds: 60
-  # Service / VirtualService Config
-  service:
-    name: web
-    port: 80
-    gateways:
-      - web
-    hosts:
-      - "*"
-  analysis:
-    interval: 45s
-    threshold: 5
-    maxWeight: 50
-    stepWeight: 10
-    metrics:
-      - name: request-success-rate
-        thresholdRange:
-          min: 99
-        interval: 1m
-      - name: request-duration
-        thresholdRange:
-          max: 500
-        interval: 30s

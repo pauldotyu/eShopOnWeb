@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: chatapi
-          image: chatapi:v0.1.0
+          image: acrbuild20237248.azurecr.io/eshop/chatapi:v1.0.0
           ports:
             - containerPort: 80
           env:
@@ -81,3 +81,37 @@ spec:
   ports:
     - protocol: TCP
       port: 80
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: chatapi
+spec:
+  selector:
+    istio: aks-istio-ingressgateway-external
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: chatapi
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - chatapi
+  http:
+    - match:
+        - uri:
+            prefix: /shopassist
+      route:
+        - destination:
+            host: chatapi
+            port:
+              number: 80

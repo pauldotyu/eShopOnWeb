@@ -136,8 +136,8 @@ jobs:
           kubectl get cm ama-metrics-prometheus-config -n kube-system || kubectl create configmap ama-metrics-prometheus-config --from-file=prometheus-config -n kube-system
 
           # deploy eshop manifests
-          kustomize edit set image publicapi=${{ env.ACR_NAME }}.azurecr.io/eshop/publicapi:${{ github.sha }}
-          kustomize edit set image web=${{ env.ACR_NAME }}.azurecr.io/eshop/web:${{ github.sha }}
-          kustomize edit set image chatapi=${{ env.ACR_NAME }}.azurecr.io/eshop/chatapi:${{ github.sha }}
+          kustomize edit set image eshop/publicapi=${{ env.ACR_NAME }}.azurecr.io/eshop/publicapi:${{ github.sha }}
+          kustomize edit set image eshop/web=${{ env.ACR_NAME }}.azurecr.io/eshop/web:${{ github.sha }}
+          kustomize edit set image eshop/chatapi=${{ env.ACR_NAME }}.azurecr.io/eshop/chatapi:${{ github.sha }}
           kustomize build . | kubectl apply -n eshop -f -
         working-directory: demo/k8s

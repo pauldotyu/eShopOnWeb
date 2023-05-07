@@ -4,19 +4,22 @@ metadata:
   name: web
   labels:
     app: web
+    version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: web
+      version: v1
   template:
     metadata:
       labels:
         app: web
+        version: v1
     spec:
       containers:
         - name: web
-          image: web:v1.1.0
+          image: eshop/web:v1
           ports:
             - containerPort: 80
           livenessProbe:
@@ -69,6 +72,11 @@ spec:
                 configMapKeyRef:
                   name: configs
                   key: API_URL
+            - name: baseUrls__chatBase
+              valueFrom:
+                configMapKeyRef:
+                  name: configs
+                  key: CHAT_URL
           resources:
             requests:
               cpu: 25m
@@ -87,3 +95,42 @@ spec:
   ports:
     - protocol: TCP
       port: 80
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: web
+spec:
+  selector:
+    istio: aks-istio-ingressgateway-external
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: web
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - web
+  http:
+    - match:
+        - uri:
+            prefix: /api
+      route:
+        - destination:
+            host: publicapi
+            port:
+              number: 80
+    - route:
+        - destination:
+            host: web
+            port:
+              number: 80

@@ -4,19 +4,22 @@ metadata:
   name: web
   labels:
     app: web
+    version: v3
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: web
+      version: v3
   template:
     metadata:
       labels:
         app: web
+        version: v3
     spec:
       containers:
         - name: web
-          image: web:v0.1.0
+          image: eshop/web:v3
           ports:
             - containerPort: 80
           livenessProbe:
@@ -81,14 +84,3 @@ spec:
             limits:
               cpu: 50m
               memory: 1024Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: web
-spec:
-  selector:
-    app: web
-  ports:
-    - protocol: TCP
-      port: 80

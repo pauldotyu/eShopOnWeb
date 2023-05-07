@@ -1,0 +1,32 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: web-canary
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web
+  progressDeadlineSeconds: 60
+  # Service / VirtualService Config
+  service:
+    name: web
+    port: 80
+    gateways:
+      - web
+    hosts:
+      - web.eshop.svc.cluster.local
+  analysis:
+    interval: 45s
+    threshold: 5
+    maxWeight: 50
+    stepWeight: 10
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 30s

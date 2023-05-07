@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: chatapi
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - chatapi
+  http:
+    - match:
+        - uri:
+            prefix: /shopassist
+      route:
+        - destination:
+            host: chatapi
+            subset: version-v1
+          weight: 50
+        - destination:
+            host: chatapi
+            subset: version-v2
+          weight: 50
