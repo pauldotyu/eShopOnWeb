@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aspnet-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: azurefile-csi-premium
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -84,6 +96,13 @@ spec:
             limits:
               cpu: 50m
               memory: 1024Mi
+          volumeMounts:
+            - name: aspnet
+              mountPath: ~/.aspnet/https:/root/.aspnet/https:ro
+      volumes:
+        - name: aspnet
+          persistentVolumeClaim:
+            claimName: aspnet-data
 ---
 apiVersion: v1
 kind: Service

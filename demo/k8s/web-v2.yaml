@@ -79,3 +79,10 @@ spec:
             limits:
               cpu: 50m
               memory: 1024Mi
+          volumeMounts:
+            - name: aspnet
+              mountPath: ~/.aspnet/https:/root/.aspnet/https:ro
+      volumes:
+        - name: aspnet
+          persistentVolumeClaim:
+            claimName: aspnet-data

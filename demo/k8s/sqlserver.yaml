@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mssql-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: azurefile-csi-premium
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,6 +45,13 @@ spec:
             limits:
               cpu: 50m
               memory: 2048Mi
+          volumeMounts:
+            - name: mssqldb
+              mountPath: /var/opt/mssql
+      volumes:
+        - name: mssqldb
+          persistentVolumeClaim:
+            claimName: mssql-data
 ---
 apiVersion: v1
 kind: Service
