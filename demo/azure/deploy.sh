@@ -150,6 +150,48 @@ AKV_NAME=$(az keyvault create --name kvbuild2023$RAND \
   --query id \
   --output tsv)
 
+az keyvault secret set \
+  --vault-name $AKV_NAME \
+  --name "openai-api-key" \
+  --value $(az cognitiveservices account keys list \
+    --name $AOAI_NAME \
+    --resource-group $RG_NAME \
+    --query key1 \
+    --output tsv)
+  
+az keyvault secret set \
+  --vault-name $AKV_NAME \
+  --name "openai-api-url" \
+  --value $(az cognitiveservices account show \
+    --name $AOAI_NAME \
+    --resource-group $RG_NAME \
+    --query endpoint \
+    --output tsv)
+
+az keyvault secret set \
+  --vault-name $AKV_NAME \
+  --name "sqlserver-password" \
+  --value "@someThingComplicated1234"
+
+az keyvault secret set \
+  --vault-name $AKV_NAME \
+  --name "catalog-db-connection" \
+  --value "Server=sqlserver,1433;Integrated Security=true;Database=Microsoft.eShopOnWeb.CatalogDb;User Id=sa;Password=@someThingComplicated1234;Trusted_Connection=false;TrustServerCertificate=True;"
+
+az keyvault secret set \
+  --vault-name $AKV_NAME \
+  --name "identity-db-connection" \
+  --value "Server=sqlserver,1433;Integrated Security=true;Database=Microsoft.eShopOnWeb.Identity;User Id=sa;Password=@someThingComplicated1234;Trusted_Connection=false;TrustServerCertificate=True;"
+
+az keyvault secret set \
+  --vault-name $AKV_NAME \
+  --name "app-config-connection" \
+  --value $(az appconfig credential list \
+    --resource-group $RG_NAME \
+    --name $AAC_NAME \
+    --query "[0].connectionString" \
+    --output tsv)
+
 # azure load testing
 ALT_NAME=$(az load create \
   --name alt-build2023-$RAND \
