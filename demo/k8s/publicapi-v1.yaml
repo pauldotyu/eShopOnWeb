@@ -4,18 +4,15 @@ metadata:
   name: publicapi
   labels:
     app: publicapi
-    version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: publicapi
-      version: v1
   template:
     metadata:
       labels:
         app: publicapi
-        version: v1
     spec:
       containers:
         - name: publicapi
@@ -54,6 +51,13 @@ spec:
             limits:
               cpu: 10m
               memory: 512Mi
+          volumeMounts:
+            - name: aspnet
+              mountPath: ~/.aspnet/https:/root/.aspnet/https:ro
+      volumes:
+        - name: aspnet
+          persistentVolumeClaim:
+            claimName: aspnet-data
 ---
 apiVersion: v1
 kind: Service

@@ -16,18 +16,15 @@ metadata:
   name: web
   labels:
     app: web
-    version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: web
-      version: v1
   template:
     metadata:
       labels:
         app: web
-        version: v1
     spec:
       containers:
         - name: web
