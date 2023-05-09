@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: chatapi
-          image: acrbuild20237248.azurecr.io/eshop/chatapi:v1.1.0
+          image: eshop/chatapi:v2
           ports:
             - containerPort: 80
           env:

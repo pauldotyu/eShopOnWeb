@@ -151,6 +151,9 @@ gh workflow run dotnetcore.yml
 
 # watch the logs
 gh run watch
+
+# view the logs
+gh run view
 ```
 
 Test the ChatApi
