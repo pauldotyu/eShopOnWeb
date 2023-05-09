@@ -144,10 +144,10 @@ AAC_NAME=$(az appconfig create \
 az appconfig feature set --name $AAC_NAME --feature Chat -y
 
 # azure key vault
-AKV_NAME=$(az keyvault create --name kvbuild2023$RAND \
+AKV_NAME=$(az keyvault create --name akvbuild2023$RAND \
   --resource-group $RG_NAME \
   --location $LOCATION \
-  --query id \
+  --query name \
   --output tsv)
 
 az keyvault secret set \
@@ -165,7 +165,7 @@ az keyvault secret set \
   --value $(az cognitiveservices account show \
     --name $AOAI_NAME \
     --resource-group $RG_NAME \
-    --query endpoint \
+    --query properties.endpoint \
     --output tsv)
 
 az keyvault secret set \
