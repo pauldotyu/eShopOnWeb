@@ -31,26 +31,26 @@ spec:
           image: eshop/web:v1
           ports:
             - containerPort: 80
-          # livenessProbe:
-          #   failureThreshold: 3
-          #   httpGet:
-          #     path: /health
-          #     port: 80
-          #     scheme: HTTP
-          #   initialDelaySeconds: 60
-          #   periodSeconds: 3
-          #   successThreshold: 1
-          #   timeoutSeconds: 60
-          # readinessProbe:
-          #   failureThreshold: 10
-          #   httpGet:
-          #     path: /health
-          #     port: 80
-          #     scheme: HTTP
-          #   initialDelaySeconds: 3
-          #   periodSeconds: 3
-          #   successThreshold: 1
-          #   timeoutSeconds: 600
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 60
+          startupProbe:
+            failureThreshold: 30
+            httpGet:
+              path: /health
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 600
           env:
             - name: ASPNETCORE_URLS
               value: http://+:80
@@ -137,14 +137,6 @@ spec:
   gateways:
     - web
   http:
-    - match:
-        - uri:
-            prefix: /api
-      route:
-        - destination:
-            host: publicapi
-            port:
-              number: 80
     - route:
         - destination:
             host: web
