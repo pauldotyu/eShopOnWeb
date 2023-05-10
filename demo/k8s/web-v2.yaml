@@ -4,18 +4,15 @@ metadata:
   name: web
   labels:
     app: web
-    version: v2
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: web
-      version: v2
   template:
     metadata:
       labels:
         app: web
-        version: v2
     spec:
       containers:
         - name: web
@@ -38,10 +35,10 @@ spec:
               path: /health
               port: 80
               scheme: HTTP
-            initialDelaySeconds: 60
+            initialDelaySeconds: 3
             periodSeconds: 3
             successThreshold: 1
-            timeoutSeconds: 60
+            timeoutSeconds: 600
           env:
             - name: ASPNETCORE_URLS
               value: http://+:80
