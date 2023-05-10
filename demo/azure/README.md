@@ -4,7 +4,7 @@ Run the deployment script
 
 ```bash
 cd demo/azure
-./deploy.sh
+time ./deploy.sh
 ```
 
 > It takes about 30+ minutes for the resources to deploy
@@ -78,47 +78,52 @@ rm -f .env
 # create new .env file
 touch .env
 
-# add sql password (TODO: see if you can remove this one)
-echo "SQL_PASSWORD=@someThingComplicated1234" >> .env
-
 # add sql connection strings
-echo "SQL_CONNECTION_CATALOG=Server=sqlserver,1433;Integrated Security=true;Database=Microsoft.eShopOnWeb.CatalogDb;User Id=sa;Password=@someThingComplicated1234;Trusted_Connection=false;TrustServerCertificate=True;" >> .env
-echo "SQL_CONNECTION_IDENTITY=Server=sqlserver,1433;Integrated Security=true;Database=Microsoft.eShopOnWeb.Identity;User Id=sa;Password=@someThingComplicated1234;Trusted_Connection=false;TrustServerCertificate=True;" >> .env
-
-# get azure app config connection string
-AAC_NAME=$(az resource list \
+AKV_NAME=$(az resource list \
   --resource-group $RG_NAME \
-  --resource-type Microsoft.AppConfiguration/configurationStores \
+  --resource-type Microsoft.KeyVault/vaults \
   --query "[0].name" -o tsv)
 
-AAC_CONN=$(az appconfig credential list \
-  --resource-group $RG_NAME \
-  --name $AAC_NAME \
-  --query "[0].connectionString" \
+SQL_CONNECTION_CATALOG=$(az keyvault secret show \
+  --vault-name $AKV_NAME \
+  --name "catalog-db-connection" \
+  --query value \
+  --output tsv)
+
+SQL_CONNECTION_IDENTITY=$(az keyvault secret show \
+  --vault-name $AKV_NAME \
+  --name "identity-db-connection" \
+  --query value \
+  --output tsv)
+
+echo "SQL_CONNECTION_CATALOG=$SQL_CONNECTION_CATALOG" >> .env
+echo "SQL_CONNECTION_IDENTITY=$SQL_CONNECTION_IDENTITY" >> .env
+
+# get azure app config connection string
+AAC_CONN=$(az keyvault secret show \
+  --vault-name $AKV_NAME \
+  --name "app-config-connection" \
+  --query value \
   --output tsv)
 
 echo "APP_CONFIG_CONNECTION=$AAC_CONN" >> .env
 
 # get azure open ai connection info
-AOAI_NAME=$(az resource list \
-  --resource-group $RG_NAME \
-  --resource-type Microsoft.CognitiveServices/accounts \
-  --query "[0].name" -o tsv)
-
-AOAI_ENDPOINT=$(az cognitiveservices account show \
-  --name $AOAI_NAME \
-  --resource-group $RG_NAME \
-  --query properties.endpoint \
+AOAI_ENDPOINT=$(az keyvault secret show \
+  --vault-name $AKV_NAME \
+  --name "openai-api-url" \
+  --query value \
   --output tsv)
 
-AOAI_KEY=$(az cognitiveservices account keys list \
-  --name $AOAI_NAME \
-  --resource-group $RG_NAME \
-  --query key1 \
+AOAI_KEY=$(az keyvault secret show \
+  --vault-name $AKV_NAME \
+  --name "openai-api-key" \
+  --query value \
   --output tsv)
 
 echo "AOAI_ENDPOINT=$AOAI_ENDPOINT" >> .env
 echo "AOAI_KEY=$AOAI_KEY" >> .env
+
 echo "AOAI_CHATCOMPLETION_MODEL_ALIAS=chatgpt-azure" >> .env
 echo "AOAI_CHATCOMPLETION_MODEL_DEPLOYMENT=gpt-35-turbo" >> .env
 echo "AOAI_EMBEDDING_MODEL_ALIAS=ada-azure" >> .env
@@ -136,6 +141,8 @@ echo "WEB_URL=http://$INGRESS_IP/" >> .env
 
 # take a look at the .env file and make sure its right
 cat .env
+
+#kubectl create configmap configs --from-env-file=.env -n eshop
 
 # upload .env file as a secret
 gh secret set ENV --repo $REPO < .env

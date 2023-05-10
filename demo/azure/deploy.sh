@@ -5,7 +5,7 @@ LOCATION=eastus
 RG_NAME=$(az group create --name rg-build2023-$RAND --location $LOCATION --query name --output tsv)
 
 # azure openai
-AOAI_NAME=$(az cognitiveservices account create --name aoai-build2023-$RAND \
+AOAI_NAME=$(az cognitiveservices account create --name aoaibuild2023$RAND \
   --location $LOCATION \
   --resource-group $RG_NAME \
   --kind OpenAI \
@@ -64,7 +64,7 @@ ACR_SERVER=$(az acr show --name acrbuild2023$RAND \
 
 # azure managed grafana
 AMG_ID=$(az grafana create \
-  --name amg-build2023-$RAND \
+  --name amgbuild2023$RAND \
   --resource-group $RG_NAME \
   --query id \
   --output tsv)
@@ -74,7 +74,7 @@ AMON_ID=$(az resource create \
   --resource-group $RG_NAME \
   --namespace microsoft.monitor \
   --resource-type accounts \
-  --name amon-build2023-$RAND \
+  --name amonbuild2023$RAND \
   --location $LOCATION \
   --properties {} \
   --query id \
@@ -87,7 +87,7 @@ az role assignment create \
   --scope $AMON_ID
 
 # azure kubernetes service
-AKS_NAME=$(az aks create --name aks-build2023-$RAND \
+AKS_NAME=$(az aks create --name aksbuild2023$RAND \
   --resource-group $RG_NAME \
   --enable-addons azure-keyvault-secrets-provider,gitops \
   --enable-managed-identity \
@@ -135,13 +135,59 @@ az grafana dashboard import \
 
 # azure app configuration store
 AAC_NAME=$(az appconfig create \
-  --name aac-build2023-$RAND \
+  --name aacbuild2023$RAND \
   --location $LOCATION \
   --resource-group $RG_NAME \
   --query name \
   --output tsv)
 
 az appconfig feature set --name $AAC_NAME --feature Chat -y
+
+SQL_USER="eshopadmin"
+SQL_PASSWORD=$(openssl rand -base64 32)
+
+SQL_NAME=$(az sql server create --name sqlbuild2023$RAND \
+  --resource-group $RG_NAME \
+  --admin-password $SQL_PASSWORD \
+  --admin-user $SQL_USER \
+  --enable-public-network true \
+  --query name \
+  --output tsv)
+
+az sql server firewall-rule create \
+  --resource-group $RG_NAME \
+  --server $SQL_NAME \
+  --name AllowAllWindowsAzureIps \
+  --start-ip-address "0.0.0.0" \
+  --end-ip-address "0.0.0.0"
+
+SQL_POOL_NAME=$(az sql elastic-pool create \
+  --resource-group $RG_NAME \
+  --server $SQL_NAME \
+  --name "$SQL_NAME-pool" \
+  --edition GeneralPurpose \
+  --family Gen5 \
+  --capacity 2 \
+  --query name \
+  --output tsv)
+
+SQL_DB_CATALOG=eShopOnWeb.CatalogDb
+
+az sql db create \
+  --name $SQL_DB_CATALOG \
+  --resource-group $RG_NAME \
+  --server $SQL_NAME \
+  --license-type BasePrice \
+  --elastic-pool $SQL_POOL_NAME
+
+SQL_DB_IDENTITY=eShopOnWeb.Identity
+
+az sql db create \
+  --name $SQL_DB_IDENTITY \
+  --resource-group $RG_NAME \
+  --server $SQL_NAME \
+  --license-type BasePrice \
+  --elastic-pool $SQL_POOL_NAME
 
 # azure key vault
 AKV_NAME=$(az keyvault create --name akvbuild2023$RAND \
@@ -171,17 +217,23 @@ az keyvault secret set \
 az keyvault secret set \
   --vault-name $AKV_NAME \
   --name "sqlserver-password" \
-  --value "@someThingComplicated1234"
+  --value $SQL_PASSWORD
+
+CATALOGDB_CONNECTION=$(az sql db show-connection-string --client ado.net --name $SQL_DB_CATALOG --server $SQL_NAME --output tsv)
+CATALOGDB_CONNECTION=$(echo $CATALOGDB_CONNECTION | sed "s/<username>/${SQL_USER}/g" | sed "s^<password>^${SQL_PASSWORD}^g")
 
 az keyvault secret set \
   --vault-name $AKV_NAME \
   --name "catalog-db-connection" \
-  --value "Server=sqlserver,1433;Integrated Security=true;Database=Microsoft.eShopOnWeb.CatalogDb;User Id=sa;Password=@someThingComplicated1234;Trusted_Connection=false;TrustServerCertificate=True;"
+  --value "${CATALOGDB_CONNECTION}"
+
+IDENTITY_CONNECTION=$(az sql db show-connection-string --client ado.net --name $SQL_DB_IDENTITY --server $SQL_NAME --output tsv)
+IDENTITY_CONNECTION=$(echo $IDENTITY_CONNECTION | sed "s/<username>/${SQL_USER}/g" | sed "s^<password>^${SQL_PASSWORD}^g")
 
 az keyvault secret set \
   --vault-name $AKV_NAME \
   --name "identity-db-connection" \
-  --value "Server=sqlserver,1433;Integrated Security=true;Database=Microsoft.eShopOnWeb.Identity;User Id=sa;Password=@someThingComplicated1234;Trusted_Connection=false;TrustServerCertificate=True;"
+  --value "${IDENTITY_CONNECTION}"
 
 az keyvault secret set \
   --vault-name $AKV_NAME \
@@ -194,7 +246,7 @@ az keyvault secret set \
 
 # azure load testing
 ALT_NAME=$(az load create \
-  --name alt-build2023-$RAND \
+  --name altbuild2023$RAND \
   --resource-group $RG_NAME \
   --query name \
   --output tsv)

@@ -95,7 +95,7 @@ spec:
               memory: 1024Mi
           volumeMounts:
             - name: aspnet
-              mountPath: ~/.aspnet/https:/root/.aspnet/https:ro
+              mountPath: ~/.aspnet
       volumes:
         - name: aspnet
           persistentVolumeClaim:

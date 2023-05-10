@@ -126,9 +126,6 @@ jobs:
           # deploy namespace if it doesn't exist
           kubectl get namespace | grep -q "^eshop " || kubectl create namespace eshop
 
-          # deploy sqlserver if it doesn't exist
-          kubectl get deployment sqlserver -n eshop || kubectl apply -n eshop -f sqlserver.yaml
-
           # label namespace for automatic istio sidecar injection
           kubectl label namespace eshop istio.io/rev=asm-1-17
 
