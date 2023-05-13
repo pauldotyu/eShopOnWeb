@@ -1,17 +1,18 @@
 resources:
+  - istio-gateway.yaml
   - publicapi-v1.yaml
   - web-v1.yaml
   - chatapi-v1.yaml
 
 # Change the image name and version
 images:
-  - name: chatapi
+  - name: eshop/chatapi
     newName: eshop/chatapi
     newTag: v1
-  - name: publicapi
+  - name: eshop/publicapi
     newName: eshop/publicapi
     newTag: v1
-  - name: web
+  - name: eshop/web
     newName: eshop/web
     newTag: v1
 

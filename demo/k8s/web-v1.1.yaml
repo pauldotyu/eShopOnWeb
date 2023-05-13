@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: eshop/web:v3
+          image: eshop/web:v1.1
           ports:
             - containerPort: 80
           livenessProbe:
@@ -69,11 +69,6 @@ spec:
                 configMapKeyRef:
                   name: configs
                   key: API_URL
-            - name: baseUrls__chatBase
-              valueFrom:
-                configMapKeyRef:
-                  name: configs
-                  key: CHAT_URL
           resources:
             requests:
               cpu: 40m

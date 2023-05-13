@@ -113,21 +113,6 @@ spec:
       port: 80
 ---
 apiVersion: networking.istio.io/v1alpha3
-kind: Gateway
-metadata:
-  name: web
-spec:
-  selector:
-    istio: aks-istio-ingressgateway-external
-  servers:
-    - port:
-        number: 80
-        name: http
-        protocol: HTTP
-      hosts:
-        - "*"
----
-apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: web
@@ -135,7 +120,7 @@ spec:
   hosts:
     - "*"
   gateways:
-    - web
+    - eshop-ingressgateway-external
   http:
     - route:
         - destination:
